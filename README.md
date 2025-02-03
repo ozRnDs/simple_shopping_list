@@ -20,3 +20,27 @@ npx create-expo-app -t blank <app-name>
 cd <app-name>
 npx expo start
 ```
+
+# App Structure
+## Pages Flow
+```mermaid
+flowchart LR
+
+    Home[Homepage]
+
+    subgraph Updating
+        ChooseType[Choose List]
+        ItemsType[Update List]
+    end
+
+    subgraph Shopping
+        ChooseStore[Choose Store]
+        ListPage[Combined Shopping List]
+    end
+
+
+    Home --> ChooseType --> ItemsType
+    Home --> ChooseStore
+
+    ChooseStore --> ListPage
+```
