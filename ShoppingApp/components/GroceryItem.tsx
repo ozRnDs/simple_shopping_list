@@ -1,9 +1,12 @@
-import React, { useRef, useState } from 'react';
-import { StyleSheet, Text, View, SectionList,
+import Checkbox from 'expo-checkbox';
+import React, { useRef, useState, useEffect } from 'react';
+import { StyleSheet, 
+        Text, 
+        View,
         Animated,
         PanResponder,
-        GestureResponderEvent,
-        PanResponderGestureState
+        Pressable,
+        ActivityIndicator,
       } from 'react-native';
 
 type ItemProps = {
@@ -13,7 +16,10 @@ type ItemProps = {
 
 // Component for rendering an individual item with swipe actions
 const GroceryItem: React.FC<ItemProps> = ({ item , onRemove}) => {
+  const [isChecked, setChecked] = useState(false);
+
   const translateX = useRef(new Animated.Value(0)).current;
+  const progressValue = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = translateX.interpolate({
     inputRange: [-300, 0, 300],
@@ -23,17 +29,24 @@ const GroceryItem: React.FC<ItemProps> = ({ item , onRemove}) => {
 
   const panResponder = PanResponder.create({
     onMoveShouldSetPanResponder: (_, gestureState) =>
-      Math.abs(gestureState.dx) > 20,
-    onPanResponderMove: Animated.event(
-      [null, { dx: translateX }],
-      { useNativeDriver: false }
-    ),
+      (gestureState.dx > 20),
+    onPanResponderMove: (_, gestureState) => {
+      if (gestureState.dx <0){
+        Animated.spring(translateX, {
+          toValue: 0,
+          useNativeDriver: false,
+        }).start();
+      }else{
+        Animated.spring(translateX, {
+          toValue: gestureState.dx,
+          useNativeDriver: false,
+        }).start();
+      }
+    },
     onPanResponderRelease: (_, gestureState) => {
       if (gestureState.dx > 100) {
         // Right swipe action
         handleSwipe('right');
-      } else if (gestureState.dx < -100) {
-        // Left swipe action
       } else {
         // Reset position if swipe is insufficient
         resetPosition();
@@ -64,12 +77,49 @@ const GroceryItem: React.FC<ItemProps> = ({ item , onRemove}) => {
     }).start();
   };
 
+  const onPressFunction = () => {
+    setChecked(!isChecked)
+  }
+
+  useEffect(() => {
+    if (isChecked){
+      console.log("Wait to delete the item")
+      Animated.timing(progressValue, {
+        toValue: 1, // Progress reaches 100%
+        duration: 2000, // Time in ms
+        useNativeDriver: false,
+      }).start();
+
+      const timer = setTimeout(() => {
+        console.log("Delete the item");
+        onRemove(item)
+      }, 3000); // Delay in milliseconds (2 seconds)
+      return () => clearTimeout(timer); // Cleanup if state changes before timeout
+    }else{
+      console.log("Cancel Item delete");
+      progressValue.setValue(0); // Reset progress if unchecked
+    }
+    
+  }, [isChecked])
+
   return (
     <Animated.View
       {...panResponder.panHandlers}
       style={[styles.itemContainer, { transform: [{ translateX }] , backgroundColor }]}
     >
-      <Text style={styles.item}>{item}</Text>
+      <Pressable style={styles.checkbox} onPress={onPressFunction}>
+        <Checkbox value={isChecked} onValueChange={setChecked} />
+      </Pressable>
+      <Text style={[styles.item, { width: isChecked ? '70%' : '75%' } // Dynamically adjust width
+      ]}>{item}</Text>
+
+      {isChecked && (
+        <ActivityIndicator />
+      )}
+      <View style={{ minWidth:'10%', alignItems: 'flex-end'}}>
+        <Text style={styles.quantity}>1.0</Text>
+        <Text style={styles.units}>grams</Text>
+      </View>
     </Animated.View>
   );
 };
@@ -77,27 +127,29 @@ const GroceryItem: React.FC<ItemProps> = ({ item , onRemove}) => {
 export default GroceryItem
 
 const styles = StyleSheet.create({
-  sectionList: {
-    width: '100%',
-  },
-  sectionHeader: {
-    paddingTop: 2,
-    paddingLeft: 10,
-    paddingRight: 10,
-    paddingBottom: 2,
-    fontSize: 14,
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(247,247,247,1.0)',
-  },
   itemContainer: {
     backgroundColor: '#fff',
-    padding: 16,
+    padding: 2,
     borderBottomWidth: 1,
     borderColor: '#ddd',
+    flexDirection: 'row',
+    verticalAlign: 'middle',
   },
   item: {
     fontSize: 16,
     color: '#333',
+    textAlignVertical: 'center',
+    // width: '75%',
+  },
+  quantity: {
+    color: '#666',
+    textAlignVertical: 'center',
+    fontSize: 16,
+  },
+  units: {
+    color: '#666',
+    textAlignVertical: 'center',
+    fontSize: 8,
   },
   action: {
     justifyContent: 'center',
@@ -115,5 +167,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: 'bold',
+  },
+  checkbox: {
+    margin: 10,
+    marginRight: 18,
+    flexDirection: 'row',
   },
 });
