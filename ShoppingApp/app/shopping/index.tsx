@@ -1,5 +1,8 @@
+import { getTheme } from '@/styles/colors';
 import { Stack } from 'expo-router';
 import { Text, View, StyleSheet } from "react-native";
+
+
 
 export default function Shopping() {
   return (
@@ -7,8 +10,8 @@ export default function Shopping() {
             <Stack.Screen
               options={{
                 title: 'Choose Store',
-                headerStyle: { backgroundColor: '#f4511e' },
-                headerTintColor: '#fff',
+                headerStyle: { backgroundColor: getTheme().primary },
+                headerTintColor: getTheme().primary_text,
                 headerTitleStyle: {
                   fontWeight: 'bold',
                 },
@@ -22,11 +25,11 @@ export default function Shopping() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: getTheme().background,
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    color: '#fff',
+    color: getTheme().primary_text,
   },
 });
