@@ -1,3 +1,4 @@
+import { getTheme } from '@/styles/colors';
 import { Stack } from 'expo-router';
 import { Text, View, StyleSheet } from "react-native";
 
@@ -9,8 +10,8 @@ export default function Updating() {
       <Stack.Screen
         options={{
           title: 'Choose List',
-          headerStyle: { backgroundColor: '#f4511e' },
-          headerTintColor: '#fff',
+          headerStyle: { backgroundColor: getTheme().primary },
+          headerTintColor: getTheme().primary_text,
           headerTitleStyle: {
             fontWeight: 'bold',
           },
@@ -24,11 +25,11 @@ export default function Updating() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: getTheme().background,
     alignItems: 'center',
     justifyContent: 'center',
   },
   text: {
-    color: '#fff',
+    color: getTheme().primary_text,
   },
 });
